@@ -111,3 +111,5 @@ venv.bak/
 *tmp*
 *temp*
 *checkpoint*
+
+/mankey/dataproc/scripts/pdc/logs_proto/

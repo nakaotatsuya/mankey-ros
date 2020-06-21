@@ -2,7 +2,7 @@ import os
 import argparse
 import yaml
 from typing import List, Set
-
+import sys
 
 """
 Given keypoint annotation by director, this script transfer the annotation
@@ -11,14 +11,15 @@ the processed/ subdirectory for each scene.
 """
 parser = argparse.ArgumentParser()
 parser.add_argument('--annotation_dir', type=str,
-                    default='/home/wei/data/pdc/annotations/keypoints/heels',
+                    #default='/home/wei/data/pdc/annotations/keypoints/heels',
+                    default='/home/nakaotatsuya/ros/kinetic/src/mankey_ros/kpam_annotations/keypoints/mug_3_keypoint',
                     help='The directory that contains all the annotation files')
-parser.add_argument('--annotation_type', type=str, default='shoe_standard',
+parser.add_argument('--annotation_type', type=str, default='mug_3_keypoint',
                     help='Which type of annotation need to be processed')
-parser.add_argument('--save_relative_path', type=str, default='shoe_6_keypoint_image.yaml',
+parser.add_argument('--save_relative_path', type=str, default='mug_3_keypoint_image.yaml',
                     help='The path to save the image keypoint yaml file. '
                          'Relative to the log_root/2018-11-23-../processed')
-parser.add_argument('--log_root_path', type=str, default='/home/wei/data/pdc/logs_proto',
+parser.add_argument('--log_root_path', type=str, default='/home/nakaotatsuya/ros/kinetic/src/mankey_ros/mankey/dataproc/scripts/pdc/logs_proto',
                     help='Full path/to/logs_proto')
 args = parser.parse_args()
 
@@ -32,7 +33,8 @@ def get_keypoint_name_list(annotation_dict) -> List[str]:
     :return: A list of keypoint in the dictionary
     """
     assert 'keypoints' in annotation_dict
-    keypoint_name_list: List[str] = []
+    #keypoint_name_list: List[str] = []
+    keypoint_name_list = []
     for keypoint_name in annotation_dict['keypoints']:
         keypoint_name_list.append(keypoint_name)
 
@@ -56,8 +58,11 @@ def process_annotation_dict(annotation_dict, keypoint_name_list: List[str]):
 
     # Get the scene root
     assert 'scene_name' in annotation_dict
-    scene_name: str = annotation_dict['scene_name']
+    #scene_name: str = annotation_dict['scene_name']
+    scene_name = annotation_dict["scene_name"]
+    print(scene_name)
     scene_root_path = os.path.join(args.log_root_path, scene_name)
+    print(scene_root_path)
     scene_processed_path = os.path.join(scene_root_path, 'processed')
     assert os.path.exists(scene_root_path) and os.path.isdir(scene_root_path)
     assert os.path.exists(scene_processed_path) and os.path.isdir(scene_processed_path)
@@ -85,14 +90,14 @@ def process_annotation_dict(annotation_dict, keypoint_name_list: List[str]):
     tmp_imgkeypoint_yaml_name = 'director_img_keypoint_tmp.yaml'
     tmp_imgkeypoint_yaml_path = os.path.join(scene_processed_path, tmp_imgkeypoint_yaml_name)
     # Run the python command
-    mesh2img_command = 'python %s --keypoint_yaml_path %s --scene_log_path %s --output_yaml_path %s' \
+    mesh2img_command = 'python3 %s --keypoint_yaml_path %s --scene_log_path %s --output_yaml_path %s' \
               % (keypoint_mesh2img_exe_file, tmp_keypoint_yaml_path, scene_root_path, tmp_imgkeypoint_yaml_path)
     print(mesh2img_command)
     os.system(mesh2img_command)
 
     # Compute bounding box
     img_keypoint_output_path = os.path.join(scene_processed_path, args.save_relative_path)
-    bbox_command = 'python %s --scene_root_path %s --pose_yaml_path %s --output_yaml_path %s' \
+    bbox_command = 'python3 %s --scene_root_path %s --pose_yaml_path %s --output_yaml_path %s' \
                    % (bbox_exe_file, scene_root_path, tmp_imgkeypoint_yaml_path, img_keypoint_output_path)
     print(bbox_command)
     os.system(bbox_command)
@@ -107,22 +112,27 @@ def process_annotation_dict(annotation_dict, keypoint_name_list: List[str]):
 def main():
     # Check the directory
     annotation_dir = args.annotation_dir
+    #print(annotation_dir)
     assert os.path.exists(annotation_dir) and os.path.isdir(annotation_dir)
 
     # Some global meta info for given annotation_type
-    keypoint_name_list: List[str] = []
-    processed_scene: Set[str] = set()
+    #keypoint_name_list: List[str] = []
+    keypoint_name_list = []
+    #processed_scene: Set[str] = set()
+    processed_scene = set()
 
+    print("check")
     # Iterate over the yaml file inside
     for annotation_yaml_file in os.listdir(annotation_dir):
         # Get the yaml path
         annotation_yaml_path = os.path.join(annotation_dir, annotation_yaml_file)
+        #print(annotation_yaml_path)
         if not annotation_yaml_path.endswith('.yaml'):
             continue
 
         # Open the yaml file and get the map
         annotation_yaml_file = open(annotation_yaml_path, 'r')
-        annotation_yaml_list = yaml.load(annotation_yaml_file)
+        annotation_yaml_list = yaml.load(annotation_yaml_file, Loader=yaml.FullLoader)
         annotation_yaml_file.close()
 
         # Iterate over the list
@@ -136,7 +146,8 @@ def main():
                 keypoint_name_list = get_keypoint_name_list(annotation_dict)
 
             assert 'scene_name' in annotation_dict
-            scene_name: str = annotation_dict['scene_name']
+            #scene_name: str = annotation_dict['scene_name']
+            scene_name = annotation_dict['scene_name']
             if scene_name in processed_scene:
                 print('The scene %s is annotated twice for %s' % (scene_name, args.annotation_type))
                 continue
@@ -144,8 +155,11 @@ def main():
                 processed_scene.add(scene_name)
 
             # The annotation type is ok, need processing
+            print(annotation_dict)
+            print(keypoint_name_list)
             process_annotation_dict(annotation_dict, keypoint_name_list)
 
 
 if __name__ == '__main__':
+    sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
     main()

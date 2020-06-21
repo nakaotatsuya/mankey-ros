@@ -2,9 +2,12 @@ import argparse
 import os
 import yaml
 import numpy as np
-from mankey.utils.transformations import quaternion_matrix, inverse_matrix
+#from mankey.utils.transformations import quaternion_matrix, inverse_matrix
 from typing import List
+#import sys
 
+#sys.path.append(os.path.join(os.path.dirname(__file__),'...'))
+from transformations import quaternion_matrix, inverse_matrix
 
 """
 The script used to transfer the keypoint annotation from
@@ -31,12 +34,18 @@ raw_image_root = os.path.join(scene_processed_root, 'images')
 
 # The path for camera config
 camera_config_path = os.path.join(raw_image_root, 'camera_info.yaml')
+print(camera_config_path)
+print("aaaaaaaaaaaaaaaaaaaa")
 assert os.path.exists(camera_config_path)
 camera_config_map = yaml.load(open(camera_config_path, 'r'))
-focal_x: float = camera_config_map['camera_matrix']['data'][0]
-focal_y: float = camera_config_map['camera_matrix']['data'][4]
-principal_x: float = camera_config_map['camera_matrix']['data'][2]
-principal_y: float = camera_config_map['camera_matrix']['data'][5]
+# focal_x: float = camera_config_map['camera_matrix']['data'][0]
+focal_x = camera_config_map['camera_matrix']['data'][0]
+#focal_y: float = camera_config_map['camera_matrix']['data'][4]
+focal_y = camera_config_map['camera_matrix']['data'][4]
+#principal_x: float = camera_config_map['camera_matrix']['data'][2]
+principal_x = camera_config_map['camera_matrix']['data'][2]
+#principal_y: float = camera_config_map['camera_matrix']['data'][5]
+principal_y = camera_config_map['camera_matrix']['data'][5]
 
 
 def point2pixel(keypoint_in_camera: np.ndarray) -> np.ndarray:
@@ -47,7 +56,8 @@ def point2pixel(keypoint_in_camera: np.ndarray) -> np.ndarray:
     :return: (3, n_keypoint) where (xy, :) is pixel location and (z, :) is depth in mm
     """
     assert len(keypoint_in_camera.shape) is 2
-    n_keypoint: int = keypoint_in_camera.shape[1]
+    #n_keypoint: int = keypoint_in_camera.shape[1]
+    n_keypoint = keypoint_in_camera.shape[1]
     xy_depth = np.zeros((3, n_keypoint), dtype=np.int)
     xy_depth[0, :] = (np.divide(keypoint_in_camera[0, :], keypoint_in_camera[2, :]) * focal_x + principal_x).astype(np.int)
     xy_depth[1, :] = (np.divide(keypoint_in_camera[1, :], keypoint_in_camera[2, :]) * focal_y + principal_y).astype(np.int)
@@ -90,9 +100,11 @@ def get_keypoint_in_world(mesh_keypoint_map) -> np.ndarray:
     :param mesh_keypoint_map:
     :return:np.ndarray at (4, num_keypoints)
     """
-    keypoint_in_world: List[List[float]] = mesh_keypoint_map['keypoint_world_position']
+    #keypoint_in_world: List[List[float]] = mesh_keypoint_map['keypoint_world_position']
+    keypoint_in_world = mesh_keypoint_map['keypoint_world_position']
     keypoint_np = np.ones((4, len(keypoint_in_world)))
-    offset: int = 0
+    #offset: int = 0
+    offset = 0
     for keypoint in keypoint_in_world:
         for i in range(3):
             keypoint_np[i, offset] = keypoint[i]
@@ -114,7 +126,8 @@ def process_scene_image(image_data_map, keypoint_in_world: np.ndarray):
     world2camera = world2camera_from_map(camera2world_map)
 
     # Do transform and save the keypoint in data map
-    n_keypoints: int = keypoint_in_world.shape[1]
+    #n_keypoints: int = keypoint_in_world.shape[1]
+    n_keypoints = keypoint_in_world.shape[1]
     keypoint_in_camera = world2camera.dot(keypoint_in_world)
     keypoint_in_camera_list = []
     for i in range(n_keypoints):
@@ -157,7 +170,8 @@ def process_scene(pose_data_map, keypoint_in_world: np.ndarray, output_path: str
 
 def main():
     # Load the pose data
-    pose_data_path: str = os.path.join(raw_image_root, 'pose_data.yaml')
+    #pose_data_path: str = os.path.join(raw_image_root, 'pose_data.yaml')
+    pose_data_path = os.path.join(raw_image_root, 'pose_data.yaml')
     assert os.path.exists(pose_data_path)
     in_pose_file = open(pose_data_path, 'r')
     pose_data_map = yaml.load(in_pose_file)

@@ -1,10 +1,12 @@
 import os
 import argparse
 import yaml
+import sys
+sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 from mankey.utils.imgproc import mask2bbox
 
-
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 """
 Given the binary foreground, this script attempt to compute
 the TIGHT bounding box of the object in the image. Note that this
@@ -60,4 +62,5 @@ def main():
 
 
 if __name__ == '__main__':
+    #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
     main()

@@ -1,0 +1,20 @@
+- annotation_type: mug_3_keypoint
+  date_time: 2019-02-14-01-18-07
+  keypoints:
+    bottom_center:
+      position:
+      - 0.6705913895467952
+      - 0.02663940959946436
+      - -0.006708118294063148
+    handle_center:
+      position:
+      - 0.6097206373528601
+      - 0.025320283376527197
+      - 0.04189974098931826
+    top_center:
+      position:
+      - 0.6661087435542951
+      - 0.023913123526890998
+      - 0.08223963610037893
+  object_type: mug
+  scene_name: 2018-05-09-17-34-32

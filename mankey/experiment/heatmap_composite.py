@@ -1,5 +1,7 @@
 import torch
 import os
+import sys
+sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import numpy as np
 import random
@@ -22,11 +24,14 @@ def construct_dataset(is_train: bool) -> (SupervisedKeypointDataset, SupervisedK
     # Construct the db info
     db_config = SpartanSupvervisedKeypointDBConfig()
     db_config.keypoint_yaml_name = 'mug_3_keypoint_image.yaml'
-    db_config.pdc_data_root = '/home/wei/data/pdc'
+    #db_config.pdc_data_root = '/home/wei/data/pdc'
+    db_config.pdc_data_root = '/home/nakaotatsuya/ros/kinetic/src/mankey_ros/mankey/dataproc/scripts/pdc'
     if is_train:
-        db_config.config_file_path = '/home/wei/Coding/mankey/config/mugs_up_with_flat_logs.txt'
+        #db_config.config_file_path = '/home/wei/Coding/mankey/config/mugs_up_with_flat_logs.txt'
+        db_config.config_file_path = '/home/nakaotatsuya/ros/kinetic/src/mankey_ros/mankey/config/mugs_up_with_flat_logs.txt'
     else:
-        db_config.config_file_path = '/home/wei/Coding/mankey/config/mugs_up_with_flat_test_logs.txt'
+        #db_config.config_file_path = '/home/wei/Coding/mankey/config/mugs_up_with_flat_test_logs.txt'
+        db_config.config_file_path = '/home/nakaotatsuya/ros/kinetic/src/mankey_ros/mankey/config/mugs_up_with_flat_test_logs.txt'
 
     # Construct the database
     database = SpartanSupervisedKeypointDatabase(db_config)
@@ -146,7 +151,7 @@ def train(checkpoint_dir: str, start_from_ckpnt: str = '', save_epoch_offset: in
     dataset_train, train_config = construct_dataset(is_train=True)
 
     # And the dataloader
-    loader_train = DataLoader(dataset=dataset_train, batch_size=32, shuffle=True, num_workers=4)
+    loader_train = DataLoader(dataset=dataset_train, batch_size=16, shuffle=True, num_workers=4)
 
     # Construct the regressor
     network, net_config = construct_network()
