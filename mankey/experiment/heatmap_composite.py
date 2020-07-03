@@ -69,7 +69,9 @@ def visualize_entry(
 
     # The processed input
     stacked_rgbd, normalized_xy_depth, _, _ = dataset[entry_idx]
-    stacked_rgbd = torch.from_numpy(stacked_rgbd)
+    print(dataset[entry_idx][stacked_rgbd])
+    print(stacked_rgbd)
+    stacked_rgbd = torch.from_numpy(dataset[entry_idx][stacked_rgbd])
     stacked_rgbd = torch.unsqueeze(stacked_rgbd, dim=0)
     stacked_rgbd = stacked_rgbd.cuda()
 
@@ -99,7 +101,7 @@ def visualize_entry(
     keypointxy_depth_pred[2, :] = depth_pred[0, :, 0].astype(np.int)
 
     # Get the image
-    from utils.imgproc import draw_image_keypoint, draw_visible_heatmap
+    from mankey.utils.imgproc import draw_image_keypoint, draw_visible_heatmap
     keypoint_rgb_cv = draw_image_keypoint(processed_entry.cropped_rgb, keypointxy_depth_pred, processed_entry.keypoint_validity)
     rgb_save_path = os.path.join(save_dir, 'image_%d_rgb.png' % entry_idx)
     cv2.imwrite(rgb_save_path, keypoint_rgb_cv)
@@ -128,6 +130,11 @@ def visualize(network_path: str, save_dir: str):
     network, _ = construct_network()
 
     # Load the network
+    state_dict = torch.load(network_path)
+    if state_dict['head_net.features.9.weight'].shape[0] % 2 == 1:
+        state_dict['head_net.features.9.weight'] = state_dict['head_net.features.9.weight'][:-1]
+        state_dict['head_net.features.9.bias'] = state_dict['head_net.features.9.bias'][:-1]
+    
     network.load_state_dict(torch.load(network_path))
     network.cuda()
     network.eval()
@@ -151,7 +158,7 @@ def train(checkpoint_dir: str, start_from_ckpnt: str = '', save_epoch_offset: in
     dataset_train, train_config = construct_dataset(is_train=True)
 
     # And the dataloader
-    loader_train = DataLoader(dataset=dataset_train, batch_size=16, shuffle=True, num_workers=4)
+    loader_train = DataLoader(dataset=dataset_train, batch_size=32, shuffle=True, num_workers=4)
 
     # Construct the regressor
     network, net_config = construct_network()
@@ -261,4 +268,10 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    #main()
+
+    # The visualization code
+    tmp_dir = 'tmp_135'
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+    visualize("/home/nakaotatsuya/ros/kinetic/src/mankey_ros/pretrained/checkpoint-135.pth", tmp_dir)

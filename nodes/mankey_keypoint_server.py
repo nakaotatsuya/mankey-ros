@@ -15,9 +15,8 @@ from cv_bridge import CvBridge, CvBridgeError
 # The argument is only the network path
 parser = argparse.ArgumentParser()
 parser.add_argument('--net_path', type=str,
-                    default='/home/nakaotatsuya/ros/kinetic/src/mankey_ros/pretrained/checkpoint-135.pth',
+                    default='/home/nakaotatsuya/ros/kinetic/src/mankey_ros/pretrained/checkpoint-112.pth',
                     help='The absolute path to network checkpoint')
-
 
 class MankeyKeypointDetectionServer(object):
 
@@ -28,6 +27,7 @@ class MankeyKeypointDetectionServer(object):
         # The network
         assert os.path.exists(network_chkpt_path)
         self._network, self._net_config = inference.construct_resnet_nostage(network_chkpt_path)
+        #self._network, self._net_config = inference.construct_hourglass_staged(network_chkpt_path)
 
     def handle_keypoint_request(self, request):
         # type: (MankeyKeypointDetectionRequest) -> MankeyKeypointDetectionResponse

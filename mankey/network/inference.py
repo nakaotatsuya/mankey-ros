@@ -21,8 +21,16 @@ def construct_resnet_nostage(chkpt_path):
     """
     # The state dict of the network
     state_dict = torch.load(chkpt_path)
+    
+    if state_dict['head_net.features.9.weight'].shape[0] % 2 == 1:
+        state_dict['head_net.features.9.weight'] = state_dict['head_net.features.9.weight'][:-1]
+        state_dict['head_net.features.9.bias'] = state_dict['head_net.features.9.bias'][:-1]
+    
     n_keypoint = state_dict['head_net.features.9.weight'].shape[0] // 2
-    assert n_keypoint * 2 == state_dict['head_net.features.9.weight'].shape[0]
+    #n_keypoint = state_dict['head_net.features.9.weight'].shape[0]
+    print(n_keypoint)
+    print(state_dict['head_net.features.9.weight'].shape)
+    #assert n_keypoint * 2 == state_dict['head_net.features.9.weight'].shape[0] 
 
     # Construct the network
     net_config = resnet_nostage.ResnetNoStageConfig()
