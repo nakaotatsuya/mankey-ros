@@ -23,15 +23,15 @@ class depth_rgb_to_3d():
             print("Service call failed: %s"%e)
 
     def subscribe(self):
-        print("aa")
-        self.sub_rgb = message_filters.Subscriber("camera/rgb/image_rect_color", Image, queue_size=100)
-        self.sub_depth = message_filters.Subscriber("camera/depth_registered/sw_registered/image_rect_raw", Image, queue_size=100)
-        self.sub_rect = message_filters.Subscriber("~input_rect", RectArray, queue_size=100)
+        #print("aa")
+        self.sub_rgb = message_filters.Subscriber("camera/rgb/image_rect_color", Image, queue_size=10)
+        self.sub_depth = message_filters.Subscriber("camera/depth_registered/sw_registered/image_rect_raw", Image, queue_size=10)
+        self.sub_rect = message_filters.Subscriber("~input_rect", RectArray, queue_size=10)
         self.subs = [self.sub_rgb, self.sub_depth, self.sub_rect]
         #self.subs = [self.sub_rgb, self.sub_depth]
 
         if rospy.get_param("~approximate_sync", True):
-            slop = rospy.get_param("~slop", 0.8)
+            slop = rospy.get_param("~slop", 0.7)
             sync = message_filters.ApproximateTimeSynchronizer(
                 fs=self.subs, queue_size=10, slop=slop)
         else:
@@ -40,7 +40,7 @@ class depth_rgb_to_3d():
         sync.registerCallback(self.callback)
 
     def callback(self, img_msg, depth_msg, rect_msg):
-        print("bb")
+        #print("bb")
         msg = PoseArray()
         msg.header = img_msg.header
         
