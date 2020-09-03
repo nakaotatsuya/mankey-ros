@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 from mankey_ros.srv import *
 
-import argparse
 import rospy
 import cv2
 import os
@@ -9,7 +8,7 @@ from sensor_msgs.msg import Image, RegionOfInterest
 from cv_bridge import CvBridge, CvBridgeError
 
 
-def main(visualize):
+def main():
     rospy.wait_for_service('detect_keypoints')
     detect_keypoint = rospy.ServiceProxy('detect_keypoints', MankeyKeypointDetection)
 
@@ -40,29 +39,14 @@ def main(visualize):
     response = detect_keypoint(request)
     print response
 
-    if visualize:
-        import open3d as o3d
-
-        vis_list = []
-
-        color = o3d.geometry.Image(cv_rgb)
-        depth = o3d.geometry.Image(cv_depth)
-        rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(color,depth)
-
-        pcd = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd, o3d.camera.PinholeCameraIntrinsic(o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
-        vis_list.append(pcd)
-
-        for keypoint in response.keypoints_camera_frame:
-            keypoints_coords = o3d.geometry.TriangleMesh.create_coordinate_frame(
-                size=0.1, origin=[keypoint.x, keypoint.y, keypoint.z])
-            vis_list.append(keypoints_coords)
-
-        o3d.visualization.draw_geometries(vis_list)
+    cv2.circle(cv_rgb, (286,239) , 2, color=(255,0,0), thickness=2)
+    cv2.circle(cv_rgb, (311,247) , 2, color=(255,0,0), thickness=2)
+    cv2.circle(cv_rgb, (287,217) , 2, color=(255,0,0), thickness=2)
+    cv2.namedWindow("image", cv2.WINDOW_AUTOSIZE)
+    cv2.imshow("image", cv_rgb)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    cv2.waitKey(1)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--visualize", "-v", type=int, default=0)
-    args = parser.parse_args()
-    visualize = args.visualize
-    main(visualize)
+    main()

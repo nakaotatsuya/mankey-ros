@@ -15,7 +15,7 @@ from cv_bridge import CvBridge, CvBridgeError
 # The argument is only the network path
 parser = argparse.ArgumentParser()
 parser.add_argument('--net_path', type=str,
-                    default='/home/nakaotatsuya/ros/kinetic/src/mankey_ros/pretrained/checkpoint-112.pth',
+                    default='/home/nakaotatsuya/ros/kinetic/src/mankey_ros/pretrained/checkpoint-135.pth',
                     help='The absolute path to network checkpoint')
 
 class MankeyKeypointDetectionServer(object):
@@ -43,7 +43,7 @@ class MankeyKeypointDetectionServer(object):
         # The image is correct, perform inference
         try:
             bbox = request.bounding_box
-            camera_keypoint = self.process_request_raw(cv_color, cv_depth, bbox)
+            keypoint_xy_depth, camera_keypoint = self.process_request_raw(cv_color, cv_depth, bbox)
         except (RuntimeError, TypeError, ValueError):
             print('The inference is not correct.')
             return self.get_invalid_response()
@@ -78,10 +78,11 @@ class MankeyKeypointDetectionServer(object):
             top_left, bottom_right)
         keypointxy_depth_scaled = inference.inference_resnet_nostage(self._network, imgproc_out)
         keypointxy_depth_realunit = inference.get_keypoint_xy_depth_real_unit(keypointxy_depth_scaled)
-        _, camera_keypoint = inference.get_3d_prediction(
+        keypoint_xy_depth, camera_keypoint = inference.get_3d_prediction(
             keypointxy_depth_realunit,
             imgproc_out.bbox2patch)
-        return camera_keypoint
+        print(keypoint_xy_depth)
+        return keypoint_xy_depth, camera_keypoint
 
     @staticmethod
     def get_invalid_response():
